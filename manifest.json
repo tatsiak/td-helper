@@ -5,26 +5,14 @@
   
     "description": "Browser extension that shows how much time you have logged in TD",
     "background": {
-        "page": "background.html",
+        "scripts": ["background.js"],
         "persistent": true
       },
-  
-
     "author": "Sergey Tatsiak",
     
     "incognito": "not_allowed",
 
-    "permissions": ["*://*.timedoctor.com/*", "tabs", "storage", "webRequest", "webRequestBlocking"],
+    "permissions": ["*://*.timedoctor.com/*", "tabs"],
 
-
-    // "page_action": {
-    //     "default_icon": {
-    //         "16": "icons/16.png",
-    //         "32": "icons/32.png",
-    //         "48": "icons/48.png",
-    //         "128": "icons/128.png"
-    //     }
-    // },
     "browser_action": {}
-
   }
