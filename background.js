@@ -1,56 +1,46 @@
-const url = "https://login.timedoctor.com/#/dashboard_individual";
+var currentDate = new Date();
+var first = formatDate(
+  new Date(
+    currentDate.setDate(currentDate.getDate() - currentDate.getDay() + 1)
+  )
+);
+var last = formatDate(
+  new Date(
+    currentDate.setDate(currentDate.getDate() - currentDate.getDay() + 7)
+  )
+);
+var curr = formatDate(currentDate);
 
-const contentCode = `
-setTimeout(()=>{
-  const weekEl = document.querySelector('#twtw')
-  const dayEl = document.querySelector('#twt')
-  if (weekEl && dayEl) {
-    chrome.runtime.sendMessage({week: weekEl.innerText, day: dayEl.innerText}, ()=>{});
-  } else {
-    chrome.runtime.sendMessage({logout: true}, ()=>{});
-  }
-}, 1000)
-`;
+function formatDate(date) {
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+}
+
+const url = `https://login.timedoctor.com/individual-timesheet?fromDate=${first}&routeParam=false&selectedUserId=false&timezone=33&toDate=${last}`;
+
+fetch(url)
+  .then(resp => {
+    console.log("resp: ", resp);
+    return resp.json();
+  })
+  .then(res => {
+    console.log("res: ", res);
+  });
 
 let day = false;
 
-chrome.runtime.onMessage.addListener(function(request, sender) {
-  console.log("request: ", request);
-
-  if (!request.logout) {
-    console.log("case");
-
-    let text = day ? request.day : request.week;
-    text = text && text.replace(" ", ":").replace(/[hm]/g, "");
-    let color = "";
-    const hours = Number(text && text.replace(/\:.*/, ""));
-    if (day) {
-      color = hours > 8 ? "green" : "red";
-    } else {
-      color = hours > 40 ? "green" : "red";
-    }
-
-    if (text && color) {
-      chrome.browserAction.setBadgeText({ text });
-      chrome.browserAction.setBadgeBackgroundColor({ color });
-    }
-  } else {
-    chrome.browserAction.setBadgeText({ text: "" });
-    chrome.windows.update(sender.tab.windowId, { focused: true }, () => {});
-    chrome.tabs.update(sender.tab.id, { active: true }, tab => {});
-  }
-});
 
 chrome.browserAction.onClicked.addListener(function(tab) {
   day = !day;
 });
 
 setInterval(() => {
-  chrome.tabs.query({ url: "https://login.timedoctor.com/*" }, tabs => {
-    if (!tabs.length) {
-      chrome.tabs.create({ url, pinned: true, active: false }, () => {});
-    } else {
-      chrome.tabs.executeScript(tabs[0].id, { code: contentCode });
-    }
-  });
+  fetch(url)
+    .then(resp => {
+      return resp.json();
+    })
+    .then(res => {
+      console.log("res: ", res);
+    }).catch(err => {
+      chrome.tabs.create({url: 'https://timedoctor.com/'})
+    })
 }, 1000);
