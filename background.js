@@ -9,7 +9,8 @@ var last = formatDate(
     currentDate.setDate(currentDate.getDate() - currentDate.getDay() + 7)
   )
 );
-var currentDateKey = formatDate(currentDate);
+
+var currentDateKey = formatDate(new Date());
 
 function formatDate(date) {
   return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
@@ -73,6 +74,13 @@ setInterval(() => {
       const user = res.users[Object.keys(res.users)[0]];
       week = secondsToHoursMinutes(user.totaltime);
       day = secondsToHoursMinutes(user.timeline[currentDateKey].worktime);
+      console.log('res: ', res);
+      console.log('day: ', day);
+
+      console.log('currentDateKey', currentDateKey);
+      
+      
+      
       setBadge()
     })
     .catch(err => {
