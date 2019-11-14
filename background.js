@@ -1,16 +1,14 @@
-var currentDate = new Date();
-var first = formatDate(
-  new Date(
-    currentDate.setDate(currentDate.getDate() - currentDate.getDay() + 1)
-  )
+const currentDate = new Date();
+const firstDate = new Date(
+  currentDate.setDate(currentDate.getDate() - currentDate.getDay() + 1)
 );
-var last = formatDate(
-  new Date(
-    currentDate.setDate(currentDate.getDate() - currentDate.getDay() + 7)
-  )
+const lastDate = new Date(
+  currentDate.setDate(currentDate.getDate() - currentDate.getDay() + 7)
 );
+var firstDateStr = formatDate(formatDate);
+var lastDateStr = formatDate(lastDate);
 
-var currentDateKey = formatDate(new Date());
+var currentDateStr = formatDate(new Date());
 
 function formatDate(date) {
   return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
@@ -42,7 +40,7 @@ function setBadge() {
   } else {
     chrome.browserAction.setBadgeText({ text: week.str }, () => {});
 
-    if (week.hours < 40) {
+    if (week.hours < (new Date.getDay() * 8)) {
       chrome.browserAction.setBadgeBackgroundColor({ color: "red" }, () => {});
     } else {
       chrome.browserAction.setBadgeBackgroundColor(
@@ -53,13 +51,13 @@ function setBadge() {
   }
 }
 
-const url = `https://login.timedoctor.com/individual-timesheet?fromDate=${first}&routeParam=false&selectedUserId=false&timezone=33&toDate=${last}`;
+const url = `https://login.timedoctor.com/individual-timesheet?fromDate=${firstDateStr}&routeParam=false&selectedUserId=false&timezone=33&toDate=${lastDateStr}`;
 
 let dayFlag = false;
 
 chrome.browserAction.onClicked.addListener(function(tab) {
   dayFlag = !dayFlag;
-  setBadge()
+  setBadge();
 });
 
 let day = { str: "", hours: 0 };
@@ -73,15 +71,13 @@ setInterval(() => {
     .then(res => {
       const user = res.users[Object.keys(res.users)[0]];
       week = secondsToHoursMinutes(user.totaltime);
-      day = secondsToHoursMinutes(user.timeline[currentDateKey].worktime);
-      console.log('res: ', res);
-      console.log('day: ', day);
+      day = secondsToHoursMinutes(user.timeline[currentDateStr].worktime);
+      console.log("res: ", res);
+      console.log("day: ", day);
 
-      console.log('currentDateKey', currentDateKey);
-      
-      
-      
-      setBadge()
+      console.log("currentDateKey", currentDateStr);
+
+      setBadge();
     })
     .catch(err => {
       console.log("err: ", err);
