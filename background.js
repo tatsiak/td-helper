@@ -9,29 +9,60 @@ var last = formatDate(
     currentDate.setDate(currentDate.getDate() - currentDate.getDay() + 7)
   )
 );
-var curr = formatDate(currentDate);
+var currentDateKey = formatDate(currentDate);
 
 function formatDate(date) {
   return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 }
 
+function secondsToHoursMinutes(totalSeconds) {
+  totalSeconds = Number(totalSeconds);
+  hours = Math.floor(totalSeconds / 3600);
+  totalSeconds %= 3600;
+  minutes = Math.floor(totalSeconds / 60);
+  return {
+    str: `${hours}:${minutes}`,
+    hours: Number(hours),
+    minutes: Number(minutes)
+  };
+}
+
+function setBadge() {
+  if (dayFlag) {
+    chrome.browserAction.setBadgeText({ text: day.str }, () => {});
+    if (day.hours < 8) {
+      chrome.browserAction.setBadgeBackgroundColor({ color: "red" }, () => {});
+    } else {
+      chrome.browserAction.setBadgeBackgroundColor(
+        { color: "green" },
+        () => {}
+      );
+    }
+  } else {
+    chrome.browserAction.setBadgeText({ text: week.str }, () => {});
+
+    if (week.hours < 40) {
+      chrome.browserAction.setBadgeBackgroundColor({ color: "red" }, () => {});
+    } else {
+      chrome.browserAction.setBadgeBackgroundColor(
+        { color: "green" },
+        () => {}
+      );
+    }
+  }
+}
+
 const url = `https://login.timedoctor.com/individual-timesheet?fromDate=${first}&routeParam=false&selectedUserId=false&timezone=33&toDate=${last}`;
 
-fetch(url)
-  .then(resp => {
-    console.log("resp: ", resp);
-    return resp.json();
-  })
-  .then(res => {
-    console.log("res: ", res);
-  });
-
-let day = false;
-
+let dayFlag = false;
 
 chrome.browserAction.onClicked.addListener(function(tab) {
-  day = !day;
+  dayFlag = !dayFlag;
+  setBadge()
 });
+
+let day = { str: "", hours: 0 };
+let week = { str: "", hours: 0 };
 
 setInterval(() => {
   fetch(url)
@@ -39,8 +70,13 @@ setInterval(() => {
       return resp.json();
     })
     .then(res => {
-      console.log("res: ", res);
-    }).catch(err => {
-      chrome.tabs.create({url: 'https://timedoctor.com/'})
+      const user = res.users[Object.keys(res.users)[0]];
+      week = secondsToHoursMinutes(user.totaltime);
+      day = secondsToHoursMinutes(user.timeline[currentDateKey].worktime);
+      setBadge()
     })
-}, 1000);
+    .catch(err => {
+      console.log("err: ", err);
+      // chrome.tabs.create({ url: "https://timedoctor.com/" });
+    });
+}, 5000);
