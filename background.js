@@ -5,7 +5,7 @@ const firstDate = new Date(
 const lastDate = new Date(
   currentDate.setDate(currentDate.getDate() - currentDate.getDay() + 7)
 );
-var firstDateStr = formatDate(formatDate);
+var firstDateStr = formatDate(firstDate);
 var lastDateStr = formatDate(lastDate);
 
 var currentDateStr = formatDate(new Date());
@@ -27,35 +27,30 @@ function secondsToHoursMinutes(totalSeconds) {
 }
 
 function setBadge() {
+  let color = "red";
   if (dayFlag) {
     chrome.browserAction.setBadgeText({ text: day.str }, () => {});
-    if (day.hours < 8) {
-      chrome.browserAction.setBadgeBackgroundColor({ color: "red" }, () => {});
+    if (day.hours >= 8) {
+      color = "green";
     } else {
-      chrome.browserAction.setBadgeBackgroundColor(
-        { color: "green" },
-        () => {}
-      );
+      color = "red";
     }
   } else {
     chrome.browserAction.setBadgeText({ text: week.str }, () => {});
-
-    if (week.hours < (new Date.getDay() * 8)) {
-      chrome.browserAction.setBadgeBackgroundColor({ color: "red" }, () => {});
+    if (week.hours >= 40 || week.hours >= new Date().getDay() * 8) {
+      color = "green";
     } else {
-      chrome.browserAction.setBadgeBackgroundColor(
-        { color: "green" },
-        () => {}
-      );
+      color = "red";
     }
   }
+  chrome.browserAction.setBadgeBackgroundColor({ color }, () => {});
 }
 
 const url = `https://login.timedoctor.com/individual-timesheet?fromDate=${firstDateStr}&routeParam=false&selectedUserId=false&timezone=33&toDate=${lastDateStr}`;
 
 let dayFlag = false;
 
-chrome.browserAction.onClicked.addListener(function(tab) {
+chrome.browserAction.onClicked.addListener(function() {
   dayFlag = !dayFlag;
   setBadge();
 });
@@ -72,15 +67,11 @@ setInterval(() => {
       const user = res.users[Object.keys(res.users)[0]];
       week = secondsToHoursMinutes(user.totaltime);
       day = secondsToHoursMinutes(user.timeline[currentDateStr].worktime);
-      console.log("res: ", res);
-      console.log("day: ", day);
-
-      console.log("currentDateKey", currentDateStr);
 
       setBadge();
     })
     .catch(err => {
       console.log("err: ", err);
-      // chrome.tabs.create({ url: "https://timedoctor.com/" });
+      chrome.tabs.create({ url: "https://login.timedoctor.com/" });
     });
-}, 5000);
+}, 60 * 1000);
