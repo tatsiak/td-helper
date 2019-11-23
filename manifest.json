@@ -14,5 +14,9 @@
 
     "permissions": ["*://*.timedoctor.com/*", "tabs"],
 
-    "browser_action": {}
+    "browser_action": {},
+
+    "web_accessible_resources": [
+      "beep.mp3"
+  ]
   }
