@@ -35,21 +35,27 @@ const setBadge = () => {
 
   if (status === "Working") {
     if (dayOrWeekFlag) {
+      chrome.browserAction.setTitle({ title: `${8 - day.hours} hours left.` });
       chrome.browserAction.setBadgeText({ text: day.str }, () => {});
       if (day.hours >= 8) {
         bgColor = "green";
+        chrome.browserAction.setTitle({ title: "Well done! Enough for today." });
       } else {
         bgColor = "red";
       }
     } else {
+      const hoursShouldBeDoneTillTomorrow = new Date().getDay() * 8;
+      chrome.browserAction.setTitle({ title: `${hoursShouldBeDoneTillTomorrow - week.hours} left.` });
       chrome.browserAction.setBadgeText({ text: week.str }, () => {});
-      if (week.hours >= 40 || week.hours >= new Date().getDay() * 8) {
+      if (week.hours >= 40 || week.hours >= hoursShouldBeDoneTillTomorrow) {
         bgColor = "green";
+        chrome.browserAction.setTitle({ title: "Well done! Enough for today." });
       } else {
         bgColor = "red";
       }
     }
   } else {
+    chrome.browserAction.setTitle({ title: "It is better for you to log your time." });
     notLoggingInterval = setInterval(() => {
       const word = ["log", "time"][Math.round(Math.random())];
       chrome.browserAction.setBadgeText({ text: word }, () => {});
@@ -67,6 +73,8 @@ const getData = () => {
       return response.json();
     })
     .then(json => {
+      console.log("json: ", json);
+
       const user = json.users[Object.keys(json.users)[0]];
       week = formatSeconds(user.totaltime);
       day = formatSeconds(user.timeline[dateToString(new Date())].worktime);
@@ -74,6 +82,7 @@ const getData = () => {
       setBadge();
     })
     .catch(err => {
+      chrome.browserAction.setTitle({ title: "something going wrong" });
       console.log("err: ", err);
       chrome.tabs.create({ url: host });
     });
