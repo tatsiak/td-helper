@@ -10,7 +10,6 @@ let dayOrWeekFlag = false;
 let day = { str: "", hours: 0 };
 let week = { str: "", hours: 0 };
 let status = "";
-let notLoggingInterval = 0;
 let bgColor = "red";
 
 const formatSeconds = totalSeconds => {
@@ -21,18 +20,14 @@ const formatSeconds = totalSeconds => {
   return {
     str: `${hours}:${minutes}`,
     hours: Number(hours),
-    minutes: Number(minutes)
+    minutes: Number(minutes),
+    timestamp: totalSeconds * SECOND
   };
 };
-
-// prettier-ignore
-const randomColor = () => `#${Math.random().toString(16).substr(-6)}`;
 
 const dateToString = date => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 
 const setBadge = () => {
-  clearInterval(notLoggingInterval);
-
   if (status === "Working") {
     if (dayOrWeekFlag) {
       chrome.browserAction.setTitle({ title: `${8 - day.hours} hours left.` });
@@ -45,7 +40,7 @@ const setBadge = () => {
       }
     } else {
       const hoursShouldBeDoneTillTomorrow = new Date().getDay() * 8;
-      chrome.browserAction.setTitle({ title: `${hoursShouldBeDoneTillTomorrow - week.hours} left.` });
+      chrome.browserAction.setTitle({ title: `${hoursShouldBeDoneTillTomorrow - week.hours} hours left.` });
       chrome.browserAction.setBadgeText({ text: week.str }, () => {});
       if (week.hours >= 40 || week.hours >= hoursShouldBeDoneTillTomorrow) {
         bgColor = "green";
@@ -55,14 +50,10 @@ const setBadge = () => {
       }
     }
   } else {
-    chrome.browserAction.setTitle({ title: "It is better for you to log your time." });
-    notLoggingInterval = setInterval(() => {
-      const word = ["log", "time"][Math.round(Math.random())];
-      chrome.browserAction.setBadgeText({ text: word }, () => {});
-      bgColor = randomColor();
-      chrome.browserAction.setBadgeBackgroundColor({ color: bgColor }, () => {});
-      sound.play();
-    }, 2000);
+    chrome.browserAction.setTitle({ title: `You probably not logging time. Current status: ${status}` });
+    chrome.browserAction.setBadgeText({ text: "time!" }, () => {});
+    bgColor = "purple";
+    sound.play();
   }
   chrome.browserAction.setBadgeBackgroundColor({ color: bgColor }, () => {});
 };
