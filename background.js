@@ -11,6 +11,7 @@ let day = { str: "", hours: 0 };
 let week = { str: "", hours: 0 };
 let status = "";
 let bgColor = "red";
+let lastTotalTime = 0;
 
 const formatSeconds = totalSeconds => {
   totalSeconds = Number(totalSeconds);
@@ -25,11 +26,18 @@ const formatSeconds = totalSeconds => {
   };
 };
 
-const dateToString = date => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+const dateToString = date => {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1 > 9 ? date.getMonth() + 1 : `0${date.getMonth() + 1}`;
+  const day = date.getDate() > 9 ? date.getDate() : `0${date.getDate()}`;
+  return `${year}-${month}-${day}`;
+};
 
-const setBadge = () => {
-  if (status === "Working") {
+const setBadge = isLoggingTime => {
+  if (isLoggingTime) {
     if (dayOrWeekFlag) {
+      console.log("day!!: ", day);
+
       chrome.browserAction.setTitle({ title: `${8 - day.hours} hours left.` });
       chrome.browserAction.setBadgeText({ text: day.str }, () => {});
       if (day.hours >= 8) {
@@ -39,8 +47,12 @@ const setBadge = () => {
         bgColor = "red";
       }
     } else {
+      console.log("week!!");
+
       const hoursShouldBeDoneTillTomorrow = new Date().getDay() * 8;
       chrome.browserAction.setTitle({ title: `${hoursShouldBeDoneTillTomorrow - week.hours} hours left.` });
+      console.log("setting week: ", week);
+
       chrome.browserAction.setBadgeText({ text: week.str }, () => {});
       if (week.hours >= 40 || week.hours >= hoursShouldBeDoneTillTomorrow) {
         bgColor = "green";
@@ -64,24 +76,24 @@ const getData = () => {
       return response.json();
     })
     .then(json => {
-      console.log("json: ", json);
-
       const user = json.users[Object.keys(json.users)[0]];
+      const isLoggingTime = lastTotalTime !== user.totaltime;
+      lastTotalTime = user.totaltime;
       week = formatSeconds(user.totaltime);
       day = formatSeconds(user.timeline[dateToString(new Date())].worktime);
       status = user.statusCodeInfo;
-      setBadge();
+      setBadge(isLoggingTime);
     })
     .catch(err => {
       chrome.browserAction.setTitle({ title: "something going wrong" });
-      console.log("err: ", err);
+      console.error(err);
       chrome.tabs.create({ url: host });
     });
 };
 
 setInterval(() => {
   getData();
-}, 2 * MINUTE);
+}, 15 * MINUTE);
 
 chrome.browserAction.onClicked.addListener(() => {
   dayOrWeekFlag = !dayOrWeekFlag;
