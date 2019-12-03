@@ -36,8 +36,6 @@ const dateToString = date => {
 const setBadge = isLoggingTime => {
   if (isLoggingTime) {
     if (dayOrWeekFlag) {
-      console.log("day!!: ", day);
-
       chrome.browserAction.setTitle({ title: `${8 - day.hours} hours left.` });
       chrome.browserAction.setBadgeText({ text: day.str }, () => {});
       if (day.hours >= 8) {
@@ -47,12 +45,8 @@ const setBadge = isLoggingTime => {
         bgColor = "red";
       }
     } else {
-      console.log("week!!");
-
       const hoursShouldBeDoneTillTomorrow = new Date().getDay() * 8;
       chrome.browserAction.setTitle({ title: `${hoursShouldBeDoneTillTomorrow - week.hours} hours left.` });
-      console.log("setting week: ", week);
-
       chrome.browserAction.setBadgeText({ text: week.str }, () => {});
       if (week.hours >= 40 || week.hours >= hoursShouldBeDoneTillTomorrow) {
         bgColor = "green";
@@ -97,5 +91,4 @@ setInterval(() => {
 
 chrome.browserAction.onClicked.addListener(() => {
   dayOrWeekFlag = !dayOrWeekFlag;
-  getData();
 });
