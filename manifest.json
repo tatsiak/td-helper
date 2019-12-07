@@ -17,6 +17,6 @@
     "browser_action": {},
 
     "web_accessible_resources": [
-      "beep.mp3"
+      "sounds/*"
   ]
   }
