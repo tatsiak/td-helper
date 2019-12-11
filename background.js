@@ -89,7 +89,7 @@ const setBadge = isLoggingTime => {
         chrome.browserAction.setTitle({ title: "Well done! Enough for today." });
         completeSound.play();
       } else {
-        const timeLeftStr = formatSeconds(hoursToSeconds(40) - week.totalSeconds).str;
+        const timeLeftStr = formatSeconds(hoursToSeconds(hoursShouldBeDoneTillTomorrow) - week.totalSeconds).str;
         chrome.browserAction.setTitle({
           title: `After ${timeLeftStr} of work you will keep up with your week norm.\nDo your best!\n\n“${randomQuote}”`
         });
