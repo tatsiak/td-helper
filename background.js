@@ -27,11 +27,16 @@ const blue = "hsl(264, 100%, 50%)";
 const pink = "hsl(315, 100%, 40%)";
 
 const getDataUrl = () => {
-  const currentDate = new Date();
-  const firstDate = new Date(currentDate.setDate(currentDate.getDate() - currentDate.getDay() + 1));
-  const lastDate = new Date(currentDate.setDate(currentDate.getDate() - currentDate.getDay() + 7));
+  const curr = new Date();
+  const curDay = curr.getDay() || 7;
+  const first = curr.getDate() - curDay;
+  const last = first + 6;
+
+  const firstday = new Date(curr.setDate(first));
+  const lastday = new Date(curr.setDate(last));
+
   const host = "https://login.timedoctor.com/";
-  return `${host}individual-timesheet?fromDate=${dateToString(firstDate)}&routeParam=false&selectedUserId=false&timezone=33&toDate=${dateToString(lastDate)}`;
+  return `${host}individual-timesheet?fromDate=${dateToString(firstday)}&routeParam=false&selectedUserId=false&timezone=33&toDate=${dateToString(lastday)}`;
 };
 
 const numToStr = number => (number < 10 ? `0${number}` : `${number}`);
@@ -60,52 +65,61 @@ const dateToString = date => {
 };
 
 let dayOrWeekFlag = false;
-let day = { str: "", hours: 0 };
-let week = { str: "", hours: 0 };
+let day = false;
+let week = false;
 let status = "";
-let bgColor = "";
+let bgColor = "orange";
+let badgeText = "init";
+let titleText = "No time logged yet."
 let lastTotalTime = 0;
+let lastGetTimestamp = 0;
 
 const setBadge = isLoggingTime => {
   if (isLoggingTime || status === "Working") {
-    if (dayOrWeekFlag) {
-      chrome.browserAction.setBadgeText({ text: day.str }, () => {});
+    if (dayOrWeekFlag && day) {
       if (day.hours >= 8) {
         bgColor = green;
         chrome.browserAction.setTitle({ title: "Well done! Enough for today." });
         completeSound.play();
       } else {
-        const timeLeftStr = formatSeconds(hoursToSeconds(8) - day.totalSeconds).str;
+        const timeLeft = formatSeconds(hoursToSeconds(8) - day.totalSeconds);
         chrome.browserAction.setTitle({
-          title: `After ${timeLeftStr} of work you will make your day norm.\nDo your best!\n\n“${randomQuote}”`
+          title: `After ${timeLeft.str} of work you will make your day norm.\nDo your best!\n\n“${randomQuote}”`
         });
         bgColor = red;
       }
-    } else {
+    } else if (week) {
       const hoursShouldBeDoneTillTomorrow = new Date().getDay() * 8;
-      chrome.browserAction.setBadgeText({ text: week.str }, () => {});
+      badgeText = week.str;
       if (week.hours >= 40 || week.hours >= hoursShouldBeDoneTillTomorrow) {
         bgColor = green;
         chrome.browserAction.setTitle({ title: "Well done! Enough for today." });
         completeSound.play();
       } else {
-        const timeLeftStr = formatSeconds(hoursToSeconds(hoursShouldBeDoneTillTomorrow) - week.totalSeconds).str;
+        const timeLeft = formatSeconds(hoursToSeconds(hoursShouldBeDoneTillTomorrow) - week.totalSeconds);
         chrome.browserAction.setTitle({
-          title: `After ${timeLeftStr} of work you will keep up with your week norm.\nDo your best!\n\n“${randomQuote}”`
+          title: `After ${timeLeft.str} of work you will keep up with your week norm.\nDo your best!\n\n“${randomQuote}”`
         });
         bgColor = red;
       }
     }
   } else {
     chrome.browserAction.setTitle({ title: `You probably not logging time. Current status: ${status}` });
-    chrome.browserAction.setBadgeText({ text: "time!" }, () => {});
+    badgeText = "time!";
     bgColor = blue;
     beepSound.play();
   }
   chrome.browserAction.setBadgeBackgroundColor({ color: bgColor }, () => {});
+  chrome.browserAction.setBadgeText({ text: badgeText }, () => {});
 };
 
 const getData = shouldSetBadge => {
+  shouldSetBadge && setBadge(true);
+  if (new Date() - 2 * MINUTE < lastGetTimestamp) {
+    return;
+  }
+
+  lastGetTimestamp = new Date();
   fetch(getDataUrl())
     .then(response => {
       return response.json();
@@ -114,8 +128,9 @@ const getData = shouldSetBadge => {
       const user = json.users[Object.keys(json.users)[0]];
       const isLoggingTime = lastTotalTime !== user.totaltime;
       lastTotalTime = user.totaltime;
-      week = formatSeconds(user.totaltime);
-      day = formatSeconds(user.timeline[dateToString(new Date())].worktime);
+      const loggedToday = user.timeline[dateToString(new Date())];
+      day = !!loggedToday && formatSeconds(loggedToday);
+      week = !!lastTotalTime && formatSeconds(lastTotalTime);
       status = user.statusCodeInfo;
       setBadge(shouldSetBadge || isLoggingTime);
     })
@@ -129,7 +144,7 @@ const getData = shouldSetBadge => {
 
 setInterval(() => {
   getData();
-}, 15 * MINUTE);
+}, 10 * MINUTE);
 
 chrome.browserAction.onClicked.addListener(() => {
   dayOrWeekFlag = !dayOrWeekFlag;
