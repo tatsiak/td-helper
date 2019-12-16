@@ -29,7 +29,7 @@ const pink = "hsl(315, 100%, 40%)";
 const getDataUrl = () => {
   const curr = new Date();
   const curDay = curr.getDay() || 7;
-  const first = curr.getDate() - curDay;
+  const first = curr.getDate() - curDay + 1;
   const last = first + 6;
 
   const firstday = new Date(curr.setDate(first));
@@ -70,7 +70,6 @@ let week = false;
 let status = "";
 let bgColor = "orange";
 let badgeText = "init";
-let titleText = "No time logged yet."
 let lastTotalTime = 0;
 let lastGetTimestamp = 0;
 
@@ -118,7 +117,6 @@ const getData = shouldSetBadge => {
   if (new Date() - 2 * MINUTE < lastGetTimestamp) {
     return;
   }
-
   lastGetTimestamp = new Date();
   fetch(getDataUrl())
     .then(response => {
@@ -129,7 +127,7 @@ const getData = shouldSetBadge => {
       const isLoggingTime = lastTotalTime !== user.totaltime;
       lastTotalTime = user.totaltime;
       const loggedToday = user.timeline[dateToString(new Date())];
-      day = !!loggedToday && formatSeconds(loggedToday);
+      day = !!loggedToday && formatSeconds(loggedToday.worktime);
       week = !!lastTotalTime && formatSeconds(lastTotalTime);
       status = user.statusCodeInfo;
       setBadge(shouldSetBadge || isLoggingTime);
