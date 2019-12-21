@@ -73,28 +73,31 @@ let lastGetTimestamp = 0;
 
 const setBadge = isLoggingTime => {
   let hoursShouldBeDoneTillTomorrow = new Date().getDay() * 8;
-  hoursShouldBeDoneTillTomorrow = hoursShouldBeDoneTillTomorrow > 40 ? 40 : hoursShouldBeDoneTillTomorrow;
+  hoursShouldBeDoneTillTomorrow = hoursShouldBeDoneTillTomorrow >= 40 ? 40 : hoursShouldBeDoneTillTomorrow;
 
-  if (week.hours > hoursShouldBeDoneTillTomorrow) {
-    completeSound.play();
-    chrome.browserAction.setTitle({ title: "Well done! Enough for today." });
-    chrome.browserAction.setBadgeBackgroundColor({ color: green }, () => {});
-  } else {
-    chrome.browserAction.setBadgeBackgroundColor({ color: red }, () => {});
-  }
   if (isLoggingTime || status === "Working") {
+    if (week.hours >= hoursShouldBeDoneTillTomorrow) {
+      completeSound.play();
+      chrome.browserAction.setTitle({ title: "Well done! Enough for today." });
+      chrome.browserAction.setBadgeBackgroundColor({ color: green }, () => {});
+    } else {
+      chrome.browserAction.setBadgeBackgroundColor({ color: red }, () => {});
+      if (dayOrWeekFlag && day) {
+        const dayTimeLeft = formatSeconds(hoursToSeconds(8) - day.totalSeconds);
+        chrome.browserAction.setTitle({
+          title: `After ${dayTimeLeft.str} of work you will make your day norm.\nDo your best!\n\n“${randomQuote}”`
+        });
+      } else if (week) {
+        const weekTimeLeft = formatSeconds(hoursToSeconds(hoursShouldBeDoneTillTomorrow) - week.totalSeconds);
+        chrome.browserAction.setTitle({
+          title: `After ${weekTimeLeft.str} of work you will keep up with your week norm.\nDo your best!\n\n“${randomQuote}”`
+        });
+      }
+    }
     if (dayOrWeekFlag && day) {
       chrome.browserAction.setBadgeText({ text: day.str }, () => {});
-      const timeLeft = formatSeconds(hoursToSeconds(8) - day.totalSeconds);
-      chrome.browserAction.setTitle({
-        title: `After ${timeLeft.str} of work you will make your day norm.\nDo your best!\n\n“${randomQuote}”`
-      });
     } else if (week) {
       chrome.browserAction.setBadgeText({ text: week.str }, () => {});
-      const timeLeft = formatSeconds(hoursToSeconds(hoursShouldBeDoneTillTomorrow) - week.totalSeconds);
-      chrome.browserAction.setTitle({
-        title: `After ${timeLeft.str} of work you will keep up with your week norm.\nDo your best!\n\n“${randomQuote}”`
-      });
     }
   } else {
     chrome.browserAction.setTitle({ title: `You probably not logging time. Current status: ${status}` });
