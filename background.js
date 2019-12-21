@@ -68,48 +68,40 @@ let dayOrWeekFlag = false;
 let day = false;
 let week = false;
 let status = "";
-let bgColor = "orange";
-let badgeText = "init";
 let lastTotalTime = 0;
 let lastGetTimestamp = 0;
 
 const setBadge = isLoggingTime => {
+  let hoursShouldBeDoneTillTomorrow = new Date().getDay() * 8;
+  hoursShouldBeDoneTillTomorrow = hoursShouldBeDoneTillTomorrow > 40 ? 40 : hoursShouldBeDoneTillTomorrow;
+
+  if (week.hours > hoursShouldBeDoneTillTomorrow) {
+    completeSound.play();
+    chrome.browserAction.setTitle({ title: "Well done! Enough for today." });
+    chrome.browserAction.setBadgeBackgroundColor({ color: green }, () => {});
+  } else {
+    chrome.browserAction.setBadgeBackgroundColor({ color: red }, () => {});
+  }
   if (isLoggingTime || status === "Working") {
     if (dayOrWeekFlag && day) {
-      if (day.hours >= 8) {
-        bgColor = green;
-        chrome.browserAction.setTitle({ title: "Well done! Enough for today." });
-        completeSound.play();
-      } else {
-        const timeLeft = formatSeconds(hoursToSeconds(8) - day.totalSeconds);
-        chrome.browserAction.setTitle({
-          title: `After ${timeLeft.str} of work you will make your day norm.\nDo your best!\n\n“${randomQuote}”`
-        });
-        bgColor = red;
-      }
+      chrome.browserAction.setBadgeText({ text: day.str }, () => {});
+      const timeLeft = formatSeconds(hoursToSeconds(8) - day.totalSeconds);
+      chrome.browserAction.setTitle({
+        title: `After ${timeLeft.str} of work you will make your day norm.\nDo your best!\n\n“${randomQuote}”`
+      });
     } else if (week) {
-      const hoursShouldBeDoneTillTomorrow = new Date().getDay() * 8;
-      badgeText = week.str;
-      if (week.hours >= 40 || week.hours >= hoursShouldBeDoneTillTomorrow) {
-        bgColor = green;
-        chrome.browserAction.setTitle({ title: "Well done! Enough for today." });
-        completeSound.play();
-      } else {
-        const timeLeft = formatSeconds(hoursToSeconds(hoursShouldBeDoneTillTomorrow) - week.totalSeconds);
-        chrome.browserAction.setTitle({
-          title: `After ${timeLeft.str} of work you will keep up with your week norm.\nDo your best!\n\n“${randomQuote}”`
-        });
-        bgColor = red;
-      }
+      chrome.browserAction.setBadgeText({ text: week.str }, () => {});
+      const timeLeft = formatSeconds(hoursToSeconds(hoursShouldBeDoneTillTomorrow) - week.totalSeconds);
+      chrome.browserAction.setTitle({
+        title: `After ${timeLeft.str} of work you will keep up with your week norm.\nDo your best!\n\n“${randomQuote}”`
+      });
     }
   } else {
     chrome.browserAction.setTitle({ title: `You probably not logging time. Current status: ${status}` });
-    badgeText = "time!";
-    bgColor = blue;
+    chrome.browserAction.setBadgeText({ text: "time!" }, () => {});
+    chrome.browserAction.setBadgeBackgroundColor({ color: blue }, () => {});
     beepSound.play();
   }
-  chrome.browserAction.setBadgeBackgroundColor({ color: bgColor }, () => {});
-  chrome.browserAction.setBadgeText({ text: badgeText }, () => {});
 };
 
 const getData = shouldSetBadge => {
@@ -118,12 +110,17 @@ const getData = shouldSetBadge => {
     return;
   }
   lastGetTimestamp = new Date();
-  fetch(getDataUrl())
+  const url = getDataUrl();
+  console.log("data url: ", url);
+
+  fetch(url)
     .then(response => {
       return response.json();
     })
     .then(json => {
       const user = json.users[Object.keys(json.users)[0]];
+      console.log("response user: ", user);
+
       const isLoggingTime = lastTotalTime !== user.totaltime;
       lastTotalTime = user.totaltime;
       const loggedToday = user.timeline[dateToString(new Date())];
