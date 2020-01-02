@@ -31,9 +31,8 @@ const getDataUrl = () => {
   const curDay = curr.getDay() || 7;
   const first = curr.getDate() - curDay + 1;
   const last = first + 6;
-
-  const firstday = new Date(curr.setDate(first));
-  const lastday = new Date(curr.setDate(last));
+  const firstday = new Date(new Date().setDate(first));
+  const lastday = new Date(new Date().setDate(last));
 
   const host = "https://login.timedoctor.com/";
   return `${host}individual-timesheet?fromDate=${dateToString(firstday)}&routeParam=false&selectedUserId=false&timezone=33&toDate=${dateToString(lastday)}`;
