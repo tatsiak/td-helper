@@ -75,21 +75,28 @@ const setBadge = isLoggingTime => {
   hoursShouldBeDoneTillTomorrow = hoursShouldBeDoneTillTomorrow >= 40 ? 40 : hoursShouldBeDoneTillTomorrow;
 
   if (isLoggingTime || status === "Working") {
-    if (week.hours >= hoursShouldBeDoneTillTomorrow) {
+    if (week.hours >= 40) {
       completeSound.play();
-      chrome.browserAction.setTitle({ title: "Well done! Enough for today." });
+      chrome.browserAction.setTitle({ title: "Well done! Enough for this week.🏁 😎 🏆" });
+      chrome.browserAction.setBadgeBackgroundColor({ color: green }, () => {});
+    } else if (week.hours >= hoursShouldBeDoneTillTomorrow) {
+      completeSound.play();
+      chrome.browserAction.setTitle({ title: "Week norm is going as scheduled. 💪\nWell done! Enough for today." });
+      chrome.browserAction.setBadgeBackgroundColor({ color: green }, () => {});
+    } else if (day.hours >= 8 && dayOrWeekFlag) {
+      chrome.browserAction.setTitle({ title: "8 hours - done. 👍\nKeep up with week schedule! 👨‍💻" });
       chrome.browserAction.setBadgeBackgroundColor({ color: green }, () => {});
     } else {
       chrome.browserAction.setBadgeBackgroundColor({ color: red }, () => {});
       if (dayOrWeekFlag && day) {
         const dayTimeLeft = formatSeconds(hoursToSeconds(8) - day.totalSeconds);
         chrome.browserAction.setTitle({
-          title: `After ${dayTimeLeft.str} of work you will make your day norm.\nDo your best!\n\n“${randomQuote}”`
+          title: `${dayTimeLeft.str} left for finishing day norm 👨‍💻\nDo your best! 🚀\n\n“${randomQuote}”`
         });
       } else if (week) {
         const weekTimeLeft = formatSeconds(hoursToSeconds(hoursShouldBeDoneTillTomorrow) - week.totalSeconds);
         chrome.browserAction.setTitle({
-          title: `After ${weekTimeLeft.str} of work you will keep up with your week norm.\nDo your best!\n\n“${randomQuote}”`
+          title: `${weekTimeLeft.str} left for keeping up with week schedule. 👨‍💻\nDo your best! 🚀\n\n“${randomQuote}”`
         });
       }
     }
@@ -141,7 +148,7 @@ const getData = shouldSetBadge => {
 
 setInterval(() => {
   getData();
-}, 10 * MINUTE);
+}, 7 * MINUTE);
 
 chrome.browserAction.onClicked.addListener(() => {
   dayOrWeekFlag = !dayOrWeekFlag;
