@@ -25,6 +25,7 @@ const red = "hsl(0, 100%, 66%)";
 const green = "hsl(80, 100%, 30%)";
 const blue = "hsl(264, 100%, 50%)";
 const pink = "hsl(315, 100%, 40%)";
+const WEEK_NORM_HOURS = 40;
 
 const getDataUrl = () => {
   const curr = new Date();
@@ -72,10 +73,10 @@ let lastGetTimestamp = 0;
 
 const setBadge = isLoggingTime => {
   let hoursShouldBeDoneTillTomorrow = new Date().getDay() * 8;
-  hoursShouldBeDoneTillTomorrow = hoursShouldBeDoneTillTomorrow >= 40 ? 40 : hoursShouldBeDoneTillTomorrow;
+  hoursShouldBeDoneTillTomorrow = hoursShouldBeDoneTillTomorrow >= WEEK_NORM_HOURS ? WEEK_NORM_HOURS : hoursShouldBeDoneTillTomorrow;
 
   if (isLoggingTime || status === "Working") {
-    if (week.hours >= 40) {
+    if (week.hours >= WEEK_NORM_HOURS) {
       completeSound.play();
       chrome.browserAction.setTitle({ title: "Well done! Enough for this week.🏁 😎 🏆" });
       chrome.browserAction.setBadgeBackgroundColor({ color: green }, () => {});
