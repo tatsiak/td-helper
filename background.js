@@ -34,14 +34,22 @@ const setBadge = isLoggingTime => {
     chrome.browserAction.setBadgeText({ text: "time!" }, () => {});
     chrome.browserAction.setBadgeBackgroundColor({ color: blue }, () => {});
     beepSound.play();
+  } else {
+    chrome.browserAction.setBadgeText({ text: "ok" }, () => {});
+    chrome.browserAction.setTitle({ title: `Everything seems to be fine` });
+    chrome.browserAction.setBadgeBackgroundColor({ color: blue }, () => {});
   }
 };
 
 let lastGetTime = 0;
 
 const getData = () => {
-  if (new Date() - lastGetTime < 1 * MINUTE) return;
+  if (new Date() - lastGetTime < 3 * MINUTE) {
+    console.log("early");
+    return;
+  }
 
+  console.log("fetching");
   lastGetTime = new Date();
   const url = getDataUrl();
 
@@ -66,7 +74,7 @@ const getData = () => {
 
 setInterval(() => {
   getData();
-}, 2 * MINUTE);
+}, 7 * MINUTE);
 
 chrome.browserAction.onClicked.addListener(() => {
   getData();
