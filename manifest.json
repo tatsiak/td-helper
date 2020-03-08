@@ -1,22 +1,22 @@
 {
-    "manifest_version": 2,
-    "name": "TD helper",
-    "version": "0.0.1",
-  
-    "description": "Browser extension that shows how much time you have logged in TD",
-    "background": {
-        "scripts": ["background.js"],
-        "persistent": true
-      },
-    "author": "Sergey Tatsiak",
-    
-    "incognito": "not_allowed",
+  "manifest_version": 2,
+  "name": "TD helper",
+  "version": "0.1.0",
 
-    "permissions": ["*://*.timedoctor.com/*", "tabs"],
+  "description": "Browser extension that shows how much time you have logged in TD",
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "author": "Sergey Tatsiak",
 
-    "browser_action": {},
+  "incognito": "not_allowed",
 
-    "web_accessible_resources": [
-      "sounds/*"
-  ]
-  }
+  "permissions": ["*://*.timedoctor.com/*", "tabs"],
+
+  "browser_action": {
+    "default_popup": "popup.html"
+  },
+
+  "web_accessible_resources": ["sounds/*"]
+}

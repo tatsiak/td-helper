@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>popup</title>
+  </head>
+  <body>
+    <style>
+      body {
+        margin: 0;
+        background-color: gray;
+        color: #f6f4ef;
+        width: 300px;
+        min-height: 250px;
+        display: flex;
+        flex-direction: column;
+        font-size: 34px;
+
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: 0.4s;
+        transition: 0.4s;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: 0.4s;
+        transition: 0.07s;
+      }
+
+      input:focus + .slider {
+        box-shadow: 0 0 1px #2196f3;
+      }
+
+      input:checked + .slider:before {
+        -webkit-transform: translateX(26px);
+        -ms-transform: translateX(26px);
+        transform: translateX(26px);
+      }
+
+      .image {
+        width: 250px;
+        height: 200px;
+        background-clip: border-box;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+      .image--harold {
+        background-image: url("/images/harold.jpg");
+      }
+      .image--rambo {
+        background-image: url("/images/rambo.jpg");
+      }
+      .image--uncle-sam {
+        background-image: url("/images/uncle-sam.jpg");
+      }
+
+      .none {
+        display: none !important ;
+      }
+      .flex {
+        display: flex !important;
+      }
+
+      .good-job {
+        display: none;
+        font-size: 20px;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+    <div class="row">
+      day&nbsp;
+      <label class="switch">
+        <input type="checkbox" class="day-week" />
+        <span class="slider"></span>
+      </label>
+      &nbsp;week
+    </div>
+    <div class="day"></div>
+    <div class="week"></div>
+    <div class="good-job">
+      Good job! You've compleeted the sheduled norm 🎉
+      <div class="image image--rambo"></div>
+      <button class="overwork">I will work 30 minutes more 👷</button>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>

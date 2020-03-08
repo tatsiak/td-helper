@@ -26,6 +26,8 @@ const green = "hsl(80, 100%, 30%)";
 const blue = "hsl(264, 100%, 50%)";
 const pink = "hsl(315, 100%, 40%)";
 const WEEK_NORM_HOURS = 40;
+let hoursShouldBeDoneTillTomorrow = new Date().getDay() * 8;
+hoursShouldBeDoneTillTomorrow = hoursShouldBeDoneTillTomorrow >= WEEK_NORM_HOURS ? WEEK_NORM_HOURS : hoursShouldBeDoneTillTomorrow;
 
 const getDataUrl = () => {
   const curr = new Date();
@@ -70,18 +72,16 @@ let week = false;
 let status = "";
 let lastTotalTime = 0;
 let lastGetTimestamp = 0;
+let overwork = false;
 
 const setBadge = isLoggingTime => {
-  let hoursShouldBeDoneTillTomorrow = new Date().getDay() * 8;
-  hoursShouldBeDoneTillTomorrow = hoursShouldBeDoneTillTomorrow >= WEEK_NORM_HOURS ? WEEK_NORM_HOURS : hoursShouldBeDoneTillTomorrow;
-
   if (isLoggingTime || status === "Working") {
     if (week.hours >= WEEK_NORM_HOURS) {
-      completeSound.play();
+      !overwork && completeSound.play();
       chrome.browserAction.setTitle({ title: "Well done! Enough for this week.🏁 😎 🏆" });
       chrome.browserAction.setBadgeBackgroundColor({ color: green }, () => {});
     } else if (week.hours >= hoursShouldBeDoneTillTomorrow) {
-      completeSound.play();
+      !overwork && completeSound.play();
       chrome.browserAction.setTitle({ title: "Week norm is going as scheduled. 💪\nWell done! Enough for today." });
       chrome.browserAction.setBadgeBackgroundColor({ color: green }, () => {});
     } else if (day.hours >= 8 && dayOrWeekFlag) {
@@ -114,8 +114,7 @@ const setBadge = isLoggingTime => {
   }
 };
 
-const getData = shouldSetBadge => {
-  shouldSetBadge && setBadge(true);
+const getData = () => {
   if (new Date() - 2 * MINUTE < lastGetTimestamp) {
     return;
   }
@@ -137,7 +136,7 @@ const getData = shouldSetBadge => {
       day = !!loggedToday && formatSeconds(loggedToday.worktime);
       week = !!lastTotalTime && formatSeconds(lastTotalTime);
       status = user.statusCodeInfo;
-      setBadge(shouldSetBadge || isLoggingTime);
+      setBadge(isLoggingTime);
     })
     .catch(err => {
       chrome.browserAction.setTitle({ title: "something went wrong" });
@@ -147,11 +146,30 @@ const getData = shouldSetBadge => {
     });
 };
 
+let overworkEndTime = null;
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  if (request.type === "get-data") {
+    getData();
+    if (week || day) {
+      sendResponse({ week, day, status, dayOrWeekFlag, overwork });
+    }
+  } else if (request.type === "day-week") {
+    dayOrWeekFlag = request.value;
+    setBadge(true);
+  } else if (request.type === "overwork") {
+    overwork = true;
+    overworkEndTime = new Date() + 30 * MINUTE;
+  }
+  return true;
+});
+
 setInterval(() => {
+  if (new Date() >= overworkEndTime) {
+    overworkEndTime = null;
+    overwork = false;
+  }
   getData();
 }, 7 * MINUTE);
 
-chrome.browserAction.onClicked.addListener(() => {
-  dayOrWeekFlag = !dayOrWeekFlag;
-  getData(true);
-});
+getData();
