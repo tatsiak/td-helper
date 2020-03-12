@@ -165,7 +165,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 setInterval(() => {
-  if (new Date() >= overworkEndTime) {
+  if (new Date() > new Date(overworkEndTime)) {
     overworkEndTime = null;
     overwork = false;
   }
