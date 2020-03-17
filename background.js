@@ -159,7 +159,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     setBadge(true);
   } else if (request.type === "overwork") {
     overwork = true;
-    overworkEndTime = new Date() + 30 * MINUTE;
+    overworkEndTime = Number(new Date()) + 30 * MINUTE;
   }
   return true;
 });
