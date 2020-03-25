@@ -25,8 +25,9 @@ const red = "hsl(0, 100%, 66%)";
 const green = "hsl(80, 100%, 30%)";
 const blue = "hsl(264, 100%, 50%)";
 const pink = "hsl(315, 100%, 40%)";
-const WEEK_NORM_HOURS = 40;
-let hoursShouldBeDoneTillTomorrow = new Date().getDay() * 8;
+const WEEK_NORM_HOURS = 40 * 0.7;
+const DAY_NORM_HOURS = WEEK_NORM_HOURS / 5
+let hoursShouldBeDoneTillTomorrow = new Date().getDay() * DAY_NORM_HOURS;
 hoursShouldBeDoneTillTomorrow = hoursShouldBeDoneTillTomorrow >= WEEK_NORM_HOURS ? WEEK_NORM_HOURS : hoursShouldBeDoneTillTomorrow;
 
 const getDataUrl = () => {
@@ -84,13 +85,13 @@ const setBadge = isLoggingTime => {
       !overwork && completeSound.play();
       chrome.browserAction.setTitle({ title: "Week norm is going as scheduled. 💪\nWell done! Enough for today." });
       chrome.browserAction.setBadgeBackgroundColor({ color: green }, () => {});
-    } else if (day.hours >= 8 && dayOrWeekFlag) {
-      chrome.browserAction.setTitle({ title: "8 hours - done. 👍\nKeep up with week schedule! 👨‍💻" });
+    } else if (day.hours >= DAY_NORM_HOURS && dayOrWeekFlag) {
+      chrome.browserAction.setTitle({ title: `Day norm of ${DAY_NORM_HOURS} hours - done. 👍\nKeep up with week schedule! 👨‍💻` });
       chrome.browserAction.setBadgeBackgroundColor({ color: green }, () => {});
     } else {
       chrome.browserAction.setBadgeBackgroundColor({ color: red }, () => {});
       if (dayOrWeekFlag && day) {
-        const dayTimeLeft = formatSeconds(hoursToSeconds(8) - day.totalSeconds);
+        const dayTimeLeft = formatSeconds(hoursToSeconds(DAY_NORM_HOURS) - day.totalSeconds);
         chrome.browserAction.setTitle({
           title: `${dayTimeLeft.str} left for finishing day norm 👨‍💻\nDo your best! 🚀\n\n“${randomQuote}”`
         });
