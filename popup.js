@@ -10,6 +10,8 @@ const DAY_NORM_HOURS = WEEK_NORM_HOURS / 5;
 let hoursShouldBeDoneTillTomorrow = new Date().getDay() * DAY_NORM_HOURS;
 hoursShouldBeDoneTillTomorrow = hoursShouldBeDoneTillTomorrow >= WEEK_NORM_HOURS ? WEEK_NORM_HOURS : hoursShouldBeDoneTillTomorrow;
 
+const hoursToSeconds = hours => hours * 60 * 60;
+
 chrome.runtime.sendMessage({ type: "get-data" }, function(response) {
   console.log(`message from background: ${JSON.stringify(response)}`);
 
@@ -19,7 +21,7 @@ chrome.runtime.sendMessage({ type: "get-data" }, function(response) {
   week.innerHTML = `week: ${response.week.str}`;
 
   console.log("hoursShouldBeDoneTillTomorrow: ", hoursShouldBeDoneTillTomorrow);
-  if (!response.overwork && response.week.hours >= hoursShouldBeDoneTillTomorrow) {
+  if (!response.overwork && response.week.totalSeconds >= hoursToSeconds(hoursShouldBeDoneTillTomorrow)) {
     goodJob.classList.add("flex");
   }
 });
