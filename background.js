@@ -25,7 +25,7 @@ const red = "hsl(0, 100%, 66%)";
 const green = "hsl(80, 100%, 30%)";
 const blue = "hsl(264, 100%, 50%)";
 const pink = "hsl(315, 100%, 40%)";
-const WEEK_NORM_HOURS = 40 * 0.7;
+const WEEK_NORM_HOURS = 40 * 0.9;
 const DAY_NORM_HOURS = WEEK_NORM_HOURS / 5;
 let hoursShouldBeDoneTillTomorrow = new Date().getDay() * DAY_NORM_HOURS;
 hoursShouldBeDoneTillTomorrow = hoursShouldBeDoneTillTomorrow >= WEEK_NORM_HOURS ? WEEK_NORM_HOURS : hoursShouldBeDoneTillTomorrow;
