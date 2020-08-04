@@ -5,7 +5,7 @@ const day = document.querySelector(".day");
 const week = document.querySelector(".week");
 const goodJob = document.querySelector(".good-job");
 
-const WEEK_NORM_HOURS = 40 * 0.9;
+const WEEK_NORM_HOURS = 40;
 const DAY_NORM_HOURS = WEEK_NORM_HOURS / 5;
 let hoursShouldBeDoneTillTomorrow = new Date().getDay() * DAY_NORM_HOURS;
 hoursShouldBeDoneTillTomorrow = hoursShouldBeDoneTillTomorrow >= WEEK_NORM_HOURS ? WEEK_NORM_HOURS : hoursShouldBeDoneTillTomorrow;
